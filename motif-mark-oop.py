@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-f","--filename",help="Input fasta file",required=True)
 parser.add_argument("-m","--motif_fn",help="Input motifs file, up to 7 motifs",required=True)
 parser.add_argument("-d", "--darkmode", help="ouputs dark mode figures", action="store_true")
-parser.add_argument("-s", "--size", nargs="?",type=int,const=1,default=1,help="scale factor to lengthen each nucleotide, default is 1")
+parser.add_argument("-s", "--size", nargs="?",type=int,const=1,default=2,help="scale factor to lengthen each nucleotide, default is 1")
 args = parser.parse_args()
 
 
