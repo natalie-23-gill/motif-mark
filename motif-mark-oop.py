@@ -11,9 +11,9 @@ import seaborn as sns
 # Get args
 parser = argparse.ArgumentParser()
 parser.add_argument("-f","--filename",help="Input fasta file",required=True)
-parser.add_argument("-m","--motif_fn",help="Input motifs file",required=True)
+parser.add_argument("-m","--motif_fn",help="Input motifs file, up to 7 motifs",required=True)
 parser.add_argument("-d", "--darkmode", help="ouputs dark mode figures", action="store_true")
-parser.add_argument("-s", "--size", nargs="?",type=int,const=1,default=1,help="scale factor to lengthen each nucleotide")
+parser.add_argument("-s", "--size", nargs="?",type=int,const=1,default=1,help="scale factor to lengthen each nucleotide, default is 1")
 args = parser.parse_args()
 
 
@@ -71,8 +71,19 @@ bases_dict = {"A":"A",
                "N":"[ACGT]"}
 
 
+def draw_legend(c_key,x_pos,y_pos):
+    x = x_pos+10
+    y = y_pos+50
+    for i in c_key:
 
-#########    Define Classes     ##########
+        context.select_font_face("Lato", cairo.FONT_SLANT_NORMAL,cairo.FONT_WEIGHT_NORMAL)
+        context.set_font_size(18)
+        context.set_source_rgb(c_key[i][0],c_key[i][1],c_key[i][2])
+        context.move_to(x,y)
+        context.show_text(i)
+        x+=100
+
+#########    Define Class    ##########
 
 class motif_mark:
     def __init__(self, origin, seq, motif_list,header):
@@ -155,6 +166,7 @@ class motif_mark:
                 context.stroke()   
 
 
+
 #########    Parse inputs     #########
 
 # Parse input file
@@ -219,10 +231,7 @@ for i in range(len(headers)):
 
 # width = max width of each figure 
 # height = number of motif_marks * width of each + padding
-if args.size != 1:
-    WIDTH, HEIGHT = 1000+300*args.size, len(seqs)*100+200
-else:
-    WIDTH, HEIGHT = 1000, len(seqs)*100+200
+WIDTH, HEIGHT = len(max(seqs))*args.size+300*args.size, len(seqs)*100+150
 # create the coordinates to display the graphic
 surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
 
@@ -245,7 +254,7 @@ for i in ob_dict:
     ob_dict[i].draw_seq()
     ob_dict[i].draw_motifs()
 
-
+draw_legend(col_key,left_margin,start_y)
 
 
 #write out drawing
