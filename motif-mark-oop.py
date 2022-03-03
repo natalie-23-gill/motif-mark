@@ -125,8 +125,7 @@ class motif_mark:
             context.set_source_rgb(line_col[0],line_col[1],line_col[2]) 
             context.stroke()
             
-    def are_overlapping(r, s):
-        return not(r[1] < s[0] or s[1] < r[0])
+
         
     def draw_motifs(self):
         # left margin
@@ -180,7 +179,7 @@ if args.darkmode:
     line_col = (1,1,1)
 else:
     # light mode colors
-    color_pal = sns.color_palette("colorblind",desat=.5)
+    color_pal = sns.color_palette("colorblind")
     # Remove Gray
     color_pal.remove((0.5803921568627451, 0.5803921568627451, 0.5803921568627451))
     line_col = (0,0,0)
@@ -194,10 +193,10 @@ for i in motifs:
     col_count+=1
 
 
-# replace with arg to let user pick width for exons
+# width for exons
 exon_width = 50
 
-# replace with arg to let user pick introns line width
+# introns line width
 intron_width = 2
 
 pad_header = 50
@@ -207,13 +206,11 @@ left_margin = 10
 
 ob_dict = {}
 
-start_y = 20
-
-
+start_y = 20 # starting y pos
 for i in range(len(headers)):
     ob_dict[i]=motif_mark((left_margin,start_y),seqs[i],motifs,headers[i])
     i+=1
-    start_y+=100
+    start_y+=100 # increment by 100
 
 
 
@@ -222,8 +219,10 @@ for i in range(len(headers)):
 
 # width = max width of each figure 
 # height = number of motif_marks * width of each + padding
-WIDTH, HEIGHT = 1000+300*args.size, len(seqs)*100+200
-
+if args.size != 1:
+    WIDTH, HEIGHT = 1000+300*args.size, len(seqs)*100+200
+else:
+    WIDTH, HEIGHT = 1000, len(seqs)*100+200
 # create the coordinates to display the graphic
 surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
 
@@ -250,4 +249,5 @@ for i in ob_dict:
 
 
 #write out drawing
-surface.write_to_png ("test.png") # Output to PNG
+
+surface.write_to_png (args.filename.split(".")[0]+".png") # Output to PNG
