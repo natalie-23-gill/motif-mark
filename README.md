@@ -2,20 +2,22 @@
 
 *How to use:*   
 
-` 
+```   
 conda create --name motif-mark    
 conda activate motif-mark   
 conda install -c conda-forge pycairo  
 conda install -c conda-forge seaborn
 
-` 
+``` 
 
 
 
 *Versions:*     
-`pycairo 1.20.1`   
-`seaborn-0.11.2`   
-`python  3.10.2`   
+```
+pycairo 1.20.1  
+seaborn-0.11.2 
+python  3.10.2 
+```
 
 ### How to create figures   
 
