@@ -22,6 +22,8 @@ python  3.10.2
 
 `> python3 motif-mark-oop.py -f [Fasta file] -m [Motif file] [Optional arguments]`   
 
+The input file should be a standard <a href="https://en.wikipedia.org/wiki/FASTA_format">fasta file</a> format. The motif file should contain a list of protein binding motifs which should be a string of <a href="https://en.wikipedia.org/wiki/Nucleic_acid_notation#IUPAC_notation">IUPAC nucleotide bases</a>.
+
 ### Example output : 
 
 ![Example Output](test_files/Figure_1.png)  
