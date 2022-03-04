@@ -33,5 +33,5 @@ The input file should be a standard <a href="https://en.wikipedia.org/wiki/FASTA
 
  Light mode output:   
 `python3 motif-mark-oop.py -f [Fasta file] -m [Motif file] -l`  
-Scale the nucleotides by a factor x:   
+Scale the nucleotide length by a factor x:   
 `python3 motif-mark-oop.py -f [Fasta file] -m [Motif file] -s x`
