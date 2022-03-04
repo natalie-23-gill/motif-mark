@@ -2,7 +2,6 @@
 
 import argparse
 import math
-from unicodedata import numeric
 import cairo
 import re
 import numpy as np
@@ -12,7 +11,7 @@ import seaborn as sns
 parser = argparse.ArgumentParser()
 parser.add_argument("-f","--filename",help="Input fasta file",required=True)
 parser.add_argument("-m","--motif_fn",help="Input motifs file, up to 7 motifs",required=True)
-parser.add_argument("-d", "--darkmode", help="ouputs dark mode figures", action="store_true")
+parser.add_argument("-l", "--lightmode", help="switch output to lightmode figure", action="store_true")
 parser.add_argument("-s", "--size", nargs="?",type=int,const=1,default=2,help="scale factor to lengthen each nucleotide, default is 1")
 args = parser.parse_args()
 
@@ -71,17 +70,6 @@ bases_dict = {"A":"A",
                "N":"[ACGT]"}
 
 
-def draw_legend(c_key,x_pos,y_pos):
-    x = x_pos+10
-    y = y_pos+50
-    for i in c_key:
-
-        context.select_font_face("Lato", cairo.FONT_SLANT_NORMAL,cairo.FONT_WEIGHT_NORMAL)
-        context.set_font_size(18)
-        context.set_source_rgb(c_key[i][0],c_key[i][1],c_key[i][2])
-        context.move_to(x,y)
-        context.show_text(i)
-        x+=100
 
 #########    Define Class    ##########
 
@@ -115,7 +103,7 @@ class motif_mark:
         
         # draw seq fasta header
         context.select_font_face("Lato", cairo.FONT_SLANT_NORMAL,cairo.FONT_WEIGHT_NORMAL)
-        context.set_font_size(14)
+        context.set_font_size(16)
         context.set_source_rgb(line_col[0],line_col[1],line_col[2])
         context.move_to(x,y)
         context.show_text(self.header)
@@ -126,7 +114,7 @@ class motif_mark:
             
             if i.group().isupper(): # check if exon or intron
                 
-                context.set_line_width(exon_width)
+                context.set_line_width(exon_width+args.size+4)
             else:
                 
                 context.set_line_width(intron_width)
@@ -134,6 +122,7 @@ class motif_mark:
             context.move_to(args.size*i.span()[0]+x,y+pad_header) 
             context.line_to(args.size*i.span()[1]+x,y+pad_header)
             context.set_source_rgb(line_col[0],line_col[1],line_col[2]) 
+            context.set_dash([1,0])
             context.stroke()
             
 
@@ -150,19 +139,38 @@ class motif_mark:
             match_dict[m] = []
             regex_list = [bases_dict[i] for i in m.upper()]
             
-            match_res = re.finditer("".join(regex_list),self.seq.upper())
+            match_res = re.finditer("(?=("+"".join(regex_list)+"))",self.seq.upper())
             for i in match_res:
+
                 match_dict[m].append(i.span()) 
         
-        
+        jitter =0
+        jit_dict = {}
         for i in match_dict:
+            jit_dict[i]=jitter # add .5 in increments and assign to each motif
+            jitter+=.5
+            
             for k in match_dict[i]:
 
-                context.set_line_width(exon_width)
-                context.move_to(args.size*k[0]+x,y+pad_header) 
-                context.line_to(args.size*k[1]+x,y+pad_header)
+                # height for start point
+                rect_start_y=(y+pad_header)-exon_width/2 +jit_dict[i]
                 
-                context.set_source_rgba(col_key[i][0],col_key[i][1],col_key[i][2],.7) 
+                context.move_to(args.size*k[0]+x,rect_start_y)
+                context.line_to(args.size*k[0]+x+len(i)*args.size,rect_start_y) 
+                context.line_to(args.size*k[0]+x+len(i)*args.size,rect_start_y+exon_width)
+                context.line_to(args.size*k[0]+x,rect_start_y+exon_width)
+                context.line_to(args.size*k[0]+x,rect_start_y)
+
+                context.close_path()
+
+                context.set_source_rgba(col_key[i][0],col_key[i][1],col_key[i][2],.25) 
+                context.fill_preserve()
+
+                context.set_source_rgba(col_key[i][0],col_key[i][1],col_key[i][2],.7)  
+                
+                context.set_line_width(args.size)
+                
+                
                 context.stroke()   
 
 
@@ -183,19 +191,35 @@ motifs = parse_motifs(args.motif_fn)
 
 #########    Global Variables    #########
 
-if args.darkmode:
+if not args.lightmode:
     # Get colorblind friendly palette
     color_pal = sns.color_palette("colorblind")
     # Remove Gray
     color_pal.remove((0.5803921568627451, 0.5803921568627451, 0.5803921568627451))
-    line_col = (1,1,1)
+    line_col = (.95,.95,.95)
 else:
     # light mode colors
     color_pal = sns.color_palette("colorblind")
     # Remove Gray
     color_pal.remove((0.5803921568627451, 0.5803921568627451, 0.5803921568627451))
-    line_col = (0,0,0)
+    line_col = (.4,.4,.4)
 
+def draw_legend(c_key,x_pos,y_pos):
+    x = x_pos+10
+    y = y_pos+50
+    context.select_font_face("Lato", cairo.FONT_SLANT_NORMAL,cairo.FONT_WEIGHT_NORMAL)
+    context.set_font_size(18)
+    context.set_source_rgb(line_col[0],line_col[1],line_col[2]) 
+    context.move_to(x,y-30)
+    context.show_text("Legend:")
+    for i in c_key:
+
+        context.select_font_face("Lato", cairo.FONT_SLANT_NORMAL,cairo.FONT_WEIGHT_NORMAL)
+        context.set_font_size(18)
+        context.set_source_rgb(c_key[i][0],c_key[i][1],c_key[i][2])
+        context.move_to(x,y)
+        context.show_text(i)
+        x+=100
 
 
 col_key ={} #track colors for each motif
@@ -222,7 +246,7 @@ start_y = 20 # starting y pos
 for i in range(len(headers)):
     ob_dict[i]=motif_mark((left_margin,start_y),seqs[i],motifs,headers[i])
     i+=1
-    start_y+=100 # increment by 100
+    start_y+=120 # increment by 100
 
 
 
@@ -231,7 +255,7 @@ for i in range(len(headers)):
 
 # width = max width of each figure 
 # height = number of motif_marks * width of each + padding
-WIDTH, HEIGHT = len(max(seqs))*args.size+300*args.size, len(seqs)*100+150
+WIDTH, HEIGHT = len(max(seqs))*args.size+300*args.size, len(seqs)*120+150
 # create the coordinates to display the graphic
 surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
 
@@ -240,8 +264,8 @@ context = cairo.Context(surface)
 
 
 # fill background
-if args.darkmode:
-    context.set_source_rgb(0.23529411764705882, 0.23529411764705882, 0.23529411764705882)
+if not args.lightmode:
+    context.set_source_rgb(0.1, 0.1, 0.1)
 else:
     context.set_source_rgb(1,1,1)
 context.rectangle(0, 0, WIDTH, HEIGHT)
