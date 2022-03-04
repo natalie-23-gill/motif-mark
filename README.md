@@ -14,7 +14,7 @@ conda install -c conda-forge seaborn
 *Versions:*     
 ```
 pycairo 1.20.1  
-seaborn-0.11.2 
+seaborn 0.11.2 
 python  3.10.2 
 ```
 
