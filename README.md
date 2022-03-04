@@ -2,12 +2,11 @@
 
 *How to use:*   
 
-```   
+```
 conda create --name motif-mark    
 conda activate motif-mark   
 conda install -c conda-forge pycairo  
 conda install -c conda-forge seaborn
-
 ``` 
 
 
