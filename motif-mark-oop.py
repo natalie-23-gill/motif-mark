@@ -17,16 +17,13 @@ args = parser.parse_args()
 #########    Global Variables    #########
 
 if not args.lightmode:
-    # Get colorblind friendly palette
-    color_pal = sns.color_palette("colorblind")
-    # Remove Gray
-    color_pal.remove((0.5803921568627451, 0.5803921568627451, 0.5803921568627451))
+    # Use colorblind friendly palette from the seaborn package
+    color_pal = [(0.00392156862745098, 0.45098039215686275, 0.6980392156862745), (0.8705882352941177, 0.5607843137254902, 0.0196078431372549), (0.00784313725490196, 0.6196078431372549, 0.45098039215686275), (0.8352941176470589, 0.3686274509803922, 0.0), (0.8, 0.47058823529411764, 0.7372549019607844), (0.792156862745098, 0.5686274509803921, 0.3803921568627451), (0.984313725490196, 0.6862745098039216, 0.8941176470588236), (0.9254901960784314, 0.8823529411764706, 0.2), (0.33725490196078434, 0.7058823529411765, 0.9137254901960784)]
+    # Sequence and header color
     line_col = (.95,.95,.95)
 else:
     # light mode colors
-    color_pal = sns.color_palette("colorblind")
-    # Remove Gray
-    color_pal.remove((0.5803921568627451, 0.5803921568627451, 0.5803921568627451))
+    color_pal = [(0.00392156862745098, 0.45098039215686275, 0.6980392156862745), (0.8705882352941177, 0.5607843137254902, 0.0196078431372549), (0.00784313725490196, 0.6196078431372549, 0.45098039215686275), (0.8352941176470589, 0.3686274509803922, 0.0), (0.8, 0.47058823529411764, 0.7372549019607844), (0.792156862745098, 0.5686274509803921, 0.3803921568627451), (0.984313725490196, 0.6862745098039216, 0.8941176470588236), (0.9254901960784314, 0.8823529411764706, 0.2), (0.33725490196078434, 0.7058823529411765, 0.9137254901960784)]
     line_col = (.4,.4,.4)
 
 def draw_legend(c_key,x_pos,y_pos):
@@ -165,7 +162,7 @@ class motif_mark:
         
     def draw_motifs(self):
         # left margin
-        x=self.origin[0] +5
+        x=self.origin[0] +5 
         
         # space between seq line and fasta header
         y=self.origin[1]
@@ -174,16 +171,14 @@ class motif_mark:
             # key = motif, value = (start,end)
             match_dict[m] = []
             regex_list = [bases_dict[i] for i in m.upper()]
-            
+            # Find the motifs in the sequence, returns zero length matches
             match_res = re.finditer("(?=("+"".join(regex_list)+"))",self.seq.upper())
             for i in match_res:
-
                 match_dict[m].append(i.span()) 
         
         jitter =-1
-        jit_dict = {}
+        jit_dict = {} # Used to offset the y axis of each motif
         for i in match_dict:
-            
             jitter+=.5
             jit_dict[i]=jitter # add .5 in increments and assign to each motif
             
@@ -191,11 +186,17 @@ class motif_mark:
 
                 # height for start point
                 rect_start_y=(y+pad_header)-exon_width/2 +jit_dict[i]
-                # draw a rectangle
+                # draw a rectangle:
+                # Top left
                 context.move_to(args.size*k[0]+x,rect_start_y)
-                context.line_to(args.size*k[0]+x+len(i)*args.size,rect_start_y) 
-                context.line_to(args.size*k[0]+x+len(i)*args.size,rect_start_y+exon_width)
+                # Top right
+                len_m = (args.size*k[0]+x+len(i)*args.size)-(args.size/2) # account for outline width
+                context.line_to(len_m,rect_start_y) 
+                # Bottom right
+                context.line_to(len_m,rect_start_y+exon_width)
+                # Bottom left
                 context.line_to(args.size*k[0]+x,rect_start_y+exon_width)
+                # Top left
                 context.line_to(args.size*k[0]+x,rect_start_y)
                 context.close_path()
                 # fill rectangle
@@ -205,8 +206,6 @@ class motif_mark:
                 context.set_source_rgba(col_key[i][0],col_key[i][1],col_key[i][2],.85)  
                 context.set_line_width(args.size)
                 context.stroke()   
-
-
 
 #########    Parse inputs     #########
 
@@ -240,9 +239,9 @@ for i in range(len(headers)):
 #########    Draw Background     ##########
 
 
-# width = max width of each figure 
+# width = max width of each figure + padding for right margin 
 # height = number of motif_marks * width of each + padding for legend
-WIDTH, HEIGHT = len(max(seqs))*args.size+300*args.size, len(seqs)*120+150
+WIDTH, HEIGHT = len(max(seqs))*args.size+250*args.size, len(seqs)*120+150
 # create the coordinates to display the graphic
 surface = cairo.ImageSurface (cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
 
